@@ -6,9 +6,9 @@
 
 ## Comment 1 — Rename
 
-**What I did:**
+**What I did:** Renamed `save_to_watchlist()` to `add_to_watchlist()` in `services/watchlist_service.py`. I searched the repository for the old name and updated the one call site in `routes/watchlist/watchlist.py`, including its import.
 
-**How I verified:**
+**How I verified:** A follow-up project-wide search returned no `save_to_watchlist` references. I then ran `pytest tests/ -v`; all four existing tests passed.
 
 ## Comment 2 — Deduplication
 

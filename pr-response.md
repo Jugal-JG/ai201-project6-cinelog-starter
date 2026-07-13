@@ -40,11 +40,11 @@ I used Codex to orient myself in the existing collection service and its tests, 
 
 ## Comment 6 — Rebase
 
-**What conflicted:**
+**What conflicted:** `git rebase origin/main` first stopped on an add/add conflict in `.gitignore`, because both branches had added the file. The UUID migration itself applied without a textual conflict, but `main` no longer contained the branch's pre-existing `WatchlistEntry` model. That left `watchlist_service.py` unable to import the model after the rebase, and its remaining service and route documentation still described integer film IDs.
 
-**How I resolved it:**
+**How I resolved it:** I kept the required ignore rules from both versions, including `main`'s `.pytest_cache/` entry, then continued the rebase. I restored `WatchlistEntry` in the UUID model state with `String(36)` `film_id` and its film/user relationships, and updated the watchlist service and POST endpoint documentation to use UUID strings.
 
-**How I verified no conflict remains:**
+**How I verified no conflict remains:** The rebase completed successfully. In an isolated database, I created UUID-backed films, added them to a watchlist, and retrieved them successfully. `pytest tests/ -v` passed all five tests, and the final history check confirms the feature commits sit linearly on `origin/main` with no merge commit.
 
 ## PR Description
 

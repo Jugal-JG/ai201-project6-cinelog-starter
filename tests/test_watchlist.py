@@ -5,6 +5,7 @@ from app import create_app, db
 from models import Film, User, WatchlistEntry
 from services.collection_service import FilmNotFoundError
 from services.watchlist_service import (
+    AlreadyInWatchlistError,
     add_to_watchlist,
     remove_from_watchlist,
 )
@@ -68,3 +69,15 @@ def test_remove_from_watchlist_removes_entry(app, sample_user, sample_film):
             user_id=sample_user, film_id=sample_film
         ).first() is None
 
+
+def test_add_to_watchlist_duplicate_raises(app, sample_user, sample_film):
+    """Saving the same film twice should preserve one watchlist entry."""
+    with app.app_context():
+        add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        with pytest.raises(AlreadyInWatchlistError):
+            add_to_watchlist(user_id=sample_user, film_id=sample_film)
+
+        assert WatchlistEntry.query.filter_by(
+            user_id=sample_user, film_id=sample_film
+        ).count() == 1

@@ -46,6 +46,20 @@ I used Codex to orient myself in the existing collection service and its tests, 
 
 **How I verified no conflict remains:** The rebase completed successfully. In an isolated database, I created UUID-backed films, added them to a watchlist, and retrieved them successfully. `pytest tests/ -v` passed all five tests, and the final history check confirms the feature commits sit linearly on `origin/main` with no merge commit.
 
+## Stretch Features
+
+### Remove a watchlist entry
+
+**What I did:** Added `remove_from_watchlist(user_id, film_id)` and `NotInWatchlistError` to `services/watchlist_service.py`. The function uses the same `(user_id, film_id)` lookup and delete/commit flow as `remove_from_collection()`, returning `True` only after it removes an existing entry.
+
+**How I verified:** `test_remove_from_watchlist_removes_entry` saves a real UUID-backed film, removes it, and confirms that no matching `WatchlistEntry` remains in the database.
+
+### Additional edge-case test
+
+**What I did:** Added `test_add_to_watchlist_duplicate_raises`. Although the review required the deduplication behavior, this independently tests the error path and confirms that attempting a second save does not create a second row.
+
+**Why I chose it:** Duplicate entries are especially confusing in a watchlist because they make a user's future choices look larger than they are. Verifying both the raised `AlreadyInWatchlistError` and the one-entry count protects the behavior at the service boundary.
+
 ## Commit History Screenshot
 
 ![Final git log --oneline output](docs/git-log.png)
@@ -54,7 +68,7 @@ I used Codex to orient myself in the existing collection service and its tests, 
 
 ### Feature overview
 
-CineLog now supports per-user watchlists. Clients can add a UUID-backed film through `POST /watchlist/<user_id>/add` and retrieve that user's saved films through `GET /watchlist/<user_id>`. The service validates film IDs and rejects duplicate `(user_id, film_id)` entries instead of silently creating a second entry.
+CineLog now supports per-user watchlists. Clients can add a UUID-backed film through `POST /watchlist/<user_id>/add` and retrieve that user's saved films through `GET /watchlist/<user_id>`. The service validates film IDs, rejects duplicate `(user_id, film_id)` entries instead of silently creating a second entry, and provides `remove_from_watchlist()` for service-layer removal.
 
 ### Design decisions
 

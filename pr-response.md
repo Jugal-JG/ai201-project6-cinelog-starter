@@ -18,9 +18,9 @@
 
 ## Comment 3 — Missing test
 
-**What I did:**
+**What I did:** Created `tests/test_watchlist.py` with `test_add_to_watchlist_nonexistent_film_raises`. I modeled its isolated in-memory database fixture, sample-user fixture, fake ID, and `pytest.raises(FilmNotFoundError)` assertion on `test_add_to_collection_nonexistent_film_raises`.
 
-**How I verified:**
+**How I verified:** `pytest tests/test_watchlist.py -v` passed the new test. I then ran `pytest tests/ -v`; all five tests passed.
 
 ## Comment 4 — Default visibility
 

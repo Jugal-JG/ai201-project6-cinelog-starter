@@ -2,7 +2,7 @@
 
 ## AI Usage
 
-<!-- Fill in at the end — how you used AI tools during this project -->
+I used Codex to orient myself in the existing collection service and its tests, to locate the watchlist call site, and to inspect the review discussion. I also used it to stress-test my visibility and sorting drafts by asking what privacy and usability objections a reviewer could raise. That surfaced the missing caller-facing visibility control and the value of seeing recently saved films. I added the privacy limitation to Comment 4's tradeoff and explained in Comment 5 why recency should be an optional future view rather than this endpoint's default.
 
 ## Comment 1 — Rename
 
@@ -24,19 +24,19 @@
 
 ## Comment 4 — Default visibility
 
-**My position:**
+**My position:** Keep `public=True` as the default for new `WatchlistEntry` records.
 
-**Reasoning:**
+**Reasoning:** CineLog is a community film-tracking app, so a watchlist is useful not only as a private reminder but also as a lightweight way to share future viewing interests and discover recommendations. The `public` flag is attached to each entry; defaulting it to public keeps a user's ordinary shared watchlist complete instead of quietly omitting newly saved films. This is an intentional choice to optimize the social, community-facing use of a list that users create to track films they want to see.
 
-**Tradeoff acknowledged:**
+**Tradeoff acknowledged:** A watchlist can reveal personal tastes or plans, so a private-by-default policy would better protect users who save films only for themselves. The current add endpoint also does not let a caller set visibility explicitly, which makes the public default more consequential. A follow-up should expose that choice to callers (and revisit the default if CineLog introduces more sensitive list use cases); for this feature, I am documenting the public behavior clearly rather than treating it as an accidental inherited default.
 
 ## Comment 5 — Sort order
 
-**My position:**
+**My position:** Keep the current alphabetical default in `get_watchlist()` rather than changing the endpoint to date-added order.
 
-**Reasoning:**
+**Reasoning:** A CineLog watchlist is a reference list users return to when choosing a film, not a chronological record of viewing activity. Alphabetical order makes a growing list predictable to scan and lets someone quickly find a title they remember. `date_added` says when CineLog captured an item, not when a user intends to watch it; users may add a batch of recommendations at once, so recency does not reliably represent priority. The response already includes `date_added`, so a future client can offer a recent-items view without making the base service order unstable.
 
-**Engagement with reviewer's point:**
+**Engagement with reviewer's point:** I agree that recent additions are valuable when a user has just saved a few films or wants to revisit a new recommendation. That is a strong fit for an activity feed or an explicit `sort=recent` option. I disagree that it should replace the default for this endpoint: unlike the collection endpoint, which records completed activity and appropriately uses newest-first, a watchlist is used to browse pending choices. Keeping alphabetical order preserves that browsing use case while leaving room for a later opt-in recency sort.
 
 ## Comment 6 — Rebase
 

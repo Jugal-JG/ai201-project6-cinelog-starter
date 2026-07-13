@@ -12,9 +12,9 @@
 
 ## Comment 2 — Deduplication
 
-**What I did:**
+**What I did:** Added `AlreadyInWatchlistError` and a `WatchlistEntry.query.filter_by(user_id=user_id, film_id=film_id).first()` check in `add_to_watchlist()`. The check runs after confirming the film exists and before constructing or committing a new entry, matching `add_to_collection()`'s deduplication flow.
 
-**How I verified:**
+**How I verified:** In an isolated in-memory database, I added the same film twice for one user. The second call raised `AlreadyInWatchlistError`, and the database still contained exactly one matching entry. I also ran `pytest tests/ -v`; all four existing tests passed.
 
 ## Comment 3 — Missing test
 

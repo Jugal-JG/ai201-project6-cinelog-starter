@@ -2,7 +2,7 @@
 
 ## AI Usage
 
-I used Codex to orient myself in the existing collection service and its tests, to locate the watchlist call site, and to inspect the review discussion. I also used it to stress-test my visibility and sorting drafts by asking what privacy and usability objections a reviewer could raise. That surfaced the missing caller-facing visibility control and the value of seeing recently saved films. I added the privacy limitation to Comment 4's tradeoff and explained in Comment 5 why recency should be an optional future view rather than this endpoint's default.
+I used Codex to orient myself in the existing collection service and its tests, to locate the watchlist call site, and to inspect the review discussion. I also used it to stress-test my visibility and sorting drafts by asking what privacy and usability objections a reviewer could raise. That surfaced the missing caller-facing visibility control and the value of seeing recently saved films. I added the privacy limitation to Comment 4's tradeoff and explained in Comment 5 why recency should be an optional future view rather than this endpoint's default. For Milestone 4, I gave Codex the final `git log --oneline` output to check that each commit used a conventional prefix and represented one logical change; I verified that assessment against `CONTRIBUTING.md` before capturing the history screenshot.
 
 ## Comment 1 — Rename
 
@@ -46,6 +46,25 @@ I used Codex to orient myself in the existing collection service and its tests, 
 
 **How I verified no conflict remains:** The rebase completed successfully. In an isolated database, I created UUID-backed films, added them to a watchlist, and retrieved them successfully. `pytest tests/ -v` passed all five tests, and the final history check confirms the feature commits sit linearly on `origin/main` with no merge commit.
 
+## Commit History Screenshot
+
+![Final git log --oneline output](docs/git-log.png)
+
 ## PR Description
 
-<!-- Written at the end — feature overview, design decisions, manual testing steps -->
+### Feature overview
+
+CineLog now supports per-user watchlists. Clients can add a UUID-backed film through `POST /watchlist/<user_id>/add` and retrieve that user's saved films through `GET /watchlist/<user_id>`. The service validates film IDs and rejects duplicate `(user_id, film_id)` entries instead of silently creating a second entry.
+
+### Design decisions
+
+- **Visibility:** New watchlist entries default to `public=True` to support CineLog's community sharing and discovery use case. This deliberately trades off privacy, so a future caller-facing visibility option should let users opt out explicitly.
+- **Sort order:** The default remains alphabetical by title. A watchlist is a stable reference list for choosing a film, whereas date added reflects capture time rather than viewing priority; a future opt-in recent-items sort can support the maintainer's recency use case.
+
+### Manual testing
+
+1. Run `python app.py`.
+2. In a separate terminal, create a local `User` and `Film` in an application context, then record their generated UUIDs. The service's in-memory test fixtures in `tests/test_watchlist.py` show the same model setup.
+3. Add the film with `curl -X POST http://127.0.0.1:5000/watchlist/<user_id>/add -H "Content-Type: application/json" -d '{"film_id":"<film_id>"}'`. Confirm a `201` response containing UUID `user_id` and `film_id` values.
+4. Request `GET http://127.0.0.1:5000/watchlist/<user_id>` and confirm the saved film appears with `date_added` and `public` metadata.
+5. Run `python -m pytest tests/ -v` to verify the service tests, including the nonexistent-film case.
